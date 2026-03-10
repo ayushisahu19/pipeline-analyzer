@@ -38,6 +38,53 @@ async function getBranchSummary(req, res) {
         averageBuildTime: avgBuild
     });
 }
+exports.compareBranches = async (req, res) => {
+  try {
+
+    const { branch1, branch2 } = req.query;
+
+    if (!branch1 || !branch2) {
+      return res.status(400).json({
+        error: "Please provide branch1 and branch2"
+      });
+    }
+
+    const analyzeBranch = async (branch) => {
+
+      const runs = await PipelineRun.find({ branch });
+
+      const totalRuns = runs.length;
+
+      const successRuns = runs.filter(
+        r => r.status === "SUCCESS"
+      ).length;
+
+      const successRate =
+        totalRuns === 0 ? 0 :
+        (successRuns / totalRuns) * 100;
+
+      const avgBuildTime =
+        totalRuns === 0 ? 0 :
+        runs.reduce((sum, r) => sum + r.buildTime, 0) / totalRuns;
+
+      return {
+        successRate,
+        avgBuildTime
+      };
+    };
+
+    const branch1Stats = await analyzeBranch(branch1);
+    const branch2Stats = await analyzeBranch(branch2);
+
+    res.json({
+      [branch1]: branch1Stats,
+      [branch2]: branch2Stats
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 module.exports = {
     createRun,
