@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../controllers/pipelineController");
+const pipelineController = require("../controllers/pipelineController");
 
-router.post("/pipeline", controller.createRun);
+router.post("/pipeline", pipelineController.createRun);
 
-router.get("/pipeline", controller.getRuns);
+router.get("/pipeline", pipelineController.getRuns);
 
-router.get("/pipeline/summary/:branch", controller.getBranchSummary);
+router.get("/pipeline/summary/:branch", pipelineController.getBranchSummary);
 
 module.exports = router;
