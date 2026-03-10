@@ -18,14 +18,14 @@ pipeline {
         }
 
         stage('Send Metrics') {
-            steps {
-                bat '''
-                curl -X POST http://host.docker.internal:5000/api/pipeline ^
-                -H "Content-Type: application/json" ^
-                -d "{\\"branch\\":\\"%BRANCH_NAME%\\",\\"buildTime\\":120,\\"status\\":\\"SUCCESS\\",\\"vulnerabilities\\":0}"
-                '''
-            }
-        }
+    steps {
+        bat '''
+        curl -X POST http://localhost:5000/api/pipeline ^
+        -H "Content-Type: application/json" ^
+        -d "{\\"branch\\":\\"%BRANCH_NAME%\\",\\"buildTime\\":120,\\"status\\":\\"SUCCESS\\",\\"vulnerabilities\\":0}"
+        '''
+    }
+}
 
     }
 }
