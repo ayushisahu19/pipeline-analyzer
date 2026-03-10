@@ -41,8 +41,9 @@ async function getBranchSummary(req, res) {
 exports.compareBranches = async (req, res) => {
   try {
 
-    const { branch1, branch2 } = req.query;
-
+    //const { branch1, branch2 } = req.query;
+const branch1 = decodeURIComponent(req.params.branch1);
+const branch2 = decodeURIComponent(req.params.branch2);
     if (!branch1 || !branch2) {
       return res.status(400).json({
         error: "Please provide branch1 and branch2"
