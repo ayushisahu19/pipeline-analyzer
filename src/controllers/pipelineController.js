@@ -1,11 +1,47 @@
-const express = require("express");
-const router = express.Router();
-const controller = require("../controllers/pipelineController");
+const PipelineRun = require("../models/PipelineRun");
 
-router.post("/pipeline", controller.createRun);
+async function createRun(req, res) {
+    try {
+        const run = new PipelineRun(req.body);
+        await run.save();
+        console.log("Pipeline run stored:", run);
+        res.status(201).json(run);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
 
-router.get("/pipeline", controller.getRuns);
+async function getRuns(req, res) {
+    const runs = await PipelineRun.find();
+    res.json(runs);
+}
 
-router.get("/pipeline/summary/:branch", controller.getBranchSummary);
+async function getBranchSummary(req, res) {
+    const branch = req.params.branch;
 
-module.exports = router;
+    const runs = await PipelineRun.find({ branch });
+
+    const total = runs.length;
+    const success = runs.filter(r => r.status === "SUCCESS").length;
+
+    const avgBuild = total > 0
+        ? runs.reduce((sum, r) => sum + r.buildTime, 0) / total
+        : 0;
+
+    const successRate = total > 0
+        ? (success / total) * 100
+        : 0;
+
+    res.json({
+        branch,
+        totalRuns: total,
+        successRate,
+        averageBuildTime: avgBuild
+    });
+}
+
+module.exports = {
+    createRun,
+    getRuns,
+    getBranchSummary
+};
