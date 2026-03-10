@@ -10,6 +10,6 @@ const {
 router.post("/pipeline", createRun);
 router.get("/pipeline", getRuns);
 router.get("/pipeline/summary/:branch", getBranchSummary);
-router.get("/compare/:branch1/:branch2", pipelineController.compareBranches);
-
+//router.get("/compare/:branch1/:branch2", pipelineController.compareBranches);
+router.get("/pipeline/compare/:branch1/:branch2", pipelineController.compareBranches);
 module.exports = router;
