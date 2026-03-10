@@ -4,7 +4,6 @@ async function createRun(req, res) {
     try {
         const run = new PipelineRun(req.body);
         await run.save();
-        console.log("Pipeline run stored:", run);
         res.status(201).json(run);
     } catch (error) {
         res.status(500).json({ message: error.message });
