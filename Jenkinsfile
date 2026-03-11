@@ -24,24 +24,28 @@ pipeline {
         }
 
         stage('Vulnerability Scan') {
-            steps {
-                script {
+    steps {
+        script {
 
-                    echo "Running npm audit..."
+            echo "Running npm audit..."
 
-                    bat 'npm audit --json > audit.json'
+            bat 'npm audit --json > audit.json'
 
-                    def vulnCount = powershell(
-                        returnStdout: true,
-                        script: "(Get-Content audit.json | ConvertFrom-Json).metadata.vulnerabilities | Measure-Object -Sum critical,high,moderate,low"
-                    ).trim()
+            def vulnCount = powershell(
+                returnStdout: true,
+                script: """
+                \$audit = Get-Content audit.json | ConvertFrom-Json
+                \$v = \$audit.metadata.vulnerabilities
+                (\$v.low + \$v.moderate + \$v.high + \$v.critical)
+                """
+            ).trim()
 
-                    env.VULN_COUNT = vulnCount ?: "0"
+            env.VULN_COUNT = vulnCount ?: "0"
 
-                    echo "Vulnerabilities found: ${env.VULN_COUNT}"
-                }
-            }
+            echo "Total vulnerabilities: ${env.VULN_COUNT}"
         }
+    }
+}
 
     }
 
