@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        NODE_ENV = "test"
+        API_URL = "http://localhost:5000/api/pipeline"
     }
 
     stages {
@@ -29,23 +29,25 @@ pipeline {
 
         stage('Send Metrics') {
             steps {
-                echo "Sending metrics to analyzer API..."
-                bat '''
-                curl -X POST http://localhost:5000/api/pipeline ^
-                -H "Content-Type: application/json" ^
-                -d "{\\"branch\\":\\"%BRANCH_NAME%\\",\\"status\\":\\"SUCCESS\\"}"
-                '''
+                script {
+
+                    def branch = env.BRANCH_NAME
+                    def buildTime = currentBuild.duration
+
+                    bat """
+                    curl -X POST %API_URL% ^
+                    -H "Content-Type: application/json" ^
+                    -d "{\\"branch\\":\\"${branch}\\",\\"buildTime\\":${buildTime},\\"status\\":\\"SUCCESS\\",\\"vulnerabilities\\":0}"
+                    """
+
+                }
             }
         }
     }
 
     post {
-        success {
-            echo "Pipeline completed successfully"
-        }
-
         failure {
-            echo "Pipeline failed"
+            echo "Build Failed"
         }
     }
 }
