@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        NODE_ENV = "test"
+    }
+
     stages {
 
         stage('Checkout') {
@@ -23,26 +27,32 @@ pipeline {
             }
         }
 
-        stage('Send Metrics') {
-            steps {
-                script {
-                    bat """
-                    curl -X POST http://localhost:5000/api/pipeline ^
-                    -H "Content-Type: application/json" ^
-                    -d "{\\"branch\\":\\"${env.BRANCH_NAME}\\",\\"buildTime\\":120,\\"status\\":\\"SUCCESS\\",\\"vulnerabilities\\":0}"
-                    """
-                }
-            }
-        }
+      stage('Send Metrics') {
+    steps {
+        script {
 
+            def branch = env.BRANCH_NAME
+            def buildTime = currentBuild.duration
+            def status = currentBuild.currentResult
+
+            bat """
+            curl -X POST http://localhost:5000/api/pipeline ^
+            -H "Content-Type: application/json" ^
+            -d "{\\"branch\\":\\"${branch}\\",\\"buildTime\\":${buildTime},\\"status\\":\\"${status}\\",\\"vulnerabilities\\":0}"
+            """
+
+        }
+    }
+}
     }
 
     post {
         success {
-            echo "Pipeline Success"
+            echo "Pipeline completed successfully"
         }
+
         failure {
-            echo "Pipeline Failed"
+            echo "Pipeline failed"
         }
     }
 }
