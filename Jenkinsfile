@@ -40,9 +40,7 @@ pipeline {
                     -d "{\\"branch\\":\\"${branchName}\\",\\"buildTime\\":${buildTime},\\"status\\":\\"SUCCESS\\",\\"vulnerabilities\\":0}"
                     """
 */
-stage('Send Metrics') {
- steps {
-  script {
+
 
    bat """
    curl -X POST http://localhost:5000/api/pipeline ^
@@ -51,8 +49,6 @@ stage('Send Metrics') {
    """
 
   }
- }
-}
                 }
             }
         }
