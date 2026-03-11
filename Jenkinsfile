@@ -29,21 +29,14 @@ pipeline {
 
                     echo "Running npm audit..."
 
-                    bat '''
-                    npm audit --json > audit.json
-                    '''
+                    bat 'npm audit --json > audit.json'
 
-                    def audit = readJSON file: 'audit.json'
+                    def vulnCount = powershell(
+                        returnStdout: true,
+                        script: "(Get-Content audit.json | ConvertFrom-Json).metadata.vulnerabilities | Measure-Object -Sum critical,high,moderate,low"
+                    ).trim()
 
-                    if (audit.metadata && audit.metadata.vulnerabilities) {
-                        env.VULN_COUNT =
-                            audit.metadata.vulnerabilities.critical +
-                            audit.metadata.vulnerabilities.high +
-                            audit.metadata.vulnerabilities.moderate +
-                            audit.metadata.vulnerabilities.low
-                    } else {
-                        env.VULN_COUNT = "0"
-                    }
+                    env.VULN_COUNT = vulnCount ?: "0"
 
                     echo "Vulnerabilities found: ${env.VULN_COUNT}"
                 }
@@ -61,6 +54,10 @@ pipeline {
                 def buildTime = currentBuild.duration
                 def status = currentBuild.currentResult
                 def vulnerabilities = env.VULN_COUNT ?: "0"
+
+                if (status == "FAILURE") {
+                    status = "FAILED"
+                }
 
                 echo "Sending pipeline metrics..."
 
