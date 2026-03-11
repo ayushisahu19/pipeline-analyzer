@@ -24,31 +24,28 @@ pipeline {
         }
 
         stage('Vulnerability Scan') {
-            steps {
-                script {
+    steps {
+        script {
 
-                    echo "Running npm audit..."
+            echo "Running npm audit..."
 
-                    bat '''
-                    npm audit --json > audit.json
-                    '''
+            bat 'npm audit --json > audit.json'
 
-                    def audit = readJSON file: 'audit.json'
+            def vulnCount = powershell(
+                returnStdout: true,
+                script: """
+                \$audit = Get-Content audit.json | ConvertFrom-Json
+                \$v = \$audit.metadata.vulnerabilities
+                (\$v.low + \$v.moderate + \$v.high + \$v.critical)
+                """
+            ).trim()
 
-                    if (audit.metadata && audit.metadata.vulnerabilities) {
-                        env.VULN_COUNT =
-                            audit.metadata.vulnerabilities.critical +
-                            audit.metadata.vulnerabilities.high +
-                            audit.metadata.vulnerabilities.moderate +
-                            audit.metadata.vulnerabilities.low
-                    } else {
-                        env.VULN_COUNT = "0"
-                    }
+            env.VULN_COUNT = vulnCount ?: "0"
 
-                    echo "Vulnerabilities found: ${env.VULN_COUNT}"
-                }
-            }
+            echo "Total vulnerabilities: ${env.VULN_COUNT}"
         }
+    }
+}
 
     }
 
@@ -61,6 +58,10 @@ pipeline {
                 def buildTime = currentBuild.duration
                 def status = currentBuild.currentResult
                 def vulnerabilities = env.VULN_COUNT ?: "0"
+
+                if (status == "FAILURE") {
+                    status = "FAILED"
+                }
 
                 echo "Sending pipeline metrics..."
 
