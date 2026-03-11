@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        NODE_ENV = "test"
-    }
-
     stages {
 
         stage('Checkout') {
@@ -13,46 +9,68 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Install Dependencies') {
             steps {
                 echo "Installing dependencies..."
                 bat 'npm install'
             }
         }
 
-        stage('Test') {
+        stage('Run Tests') {
             steps {
                 echo "Running tests..."
                 bat 'npm test -- --passWithNoTests'
             }
         }
 
-      stage('Send Metrics') {
-    steps {
-        script {
+        stage('Vulnerability Scan') {
+            steps {
+                script {
 
-            def branch = env.BRANCH_NAME
-            def buildTime = currentBuild.duration
-            def status = currentBuild.currentResult
+                    echo "Running npm audit..."
 
-            bat """
-            curl -X POST http://localhost:5000/api/pipeline ^
-            -H "Content-Type: application/json" ^
-            -d "{\\"branch\\":\\"${branch}\\",\\"buildTime\\":${buildTime},\\"status\\":\\"${status}\\",\\"vulnerabilities\\":0}"
-            """
+                    bat '''
+                    npm audit --json > audit.json
+                    '''
 
+                    def audit = readJSON file: 'audit.json'
+
+                    if (audit.metadata && audit.metadata.vulnerabilities) {
+                        env.VULN_COUNT =
+                            audit.metadata.vulnerabilities.critical +
+                            audit.metadata.vulnerabilities.high +
+                            audit.metadata.vulnerabilities.moderate +
+                            audit.metadata.vulnerabilities.low
+                    } else {
+                        env.VULN_COUNT = "0"
+                    }
+
+                    echo "Vulnerabilities found: ${env.VULN_COUNT}"
+                }
+            }
         }
-    }
-}
+
     }
 
     post {
-        success {
-            echo "Pipeline completed successfully"
+
+        always {
+            script {
+
+                def branch = env.BRANCH_NAME
+                def buildTime = currentBuild.duration
+                def status = currentBuild.currentResult
+                def vulnerabilities = env.VULN_COUNT ?: "0"
+
+                echo "Sending pipeline metrics..."
+
+                bat """
+                curl -X POST http://localhost:5000/api/pipeline ^
+                -H "Content-Type: application/json" ^
+                -d "{\\"branch\\":\\"${branch}\\",\\"buildTime\\":${buildTime},\\"status\\":\\"${status}\\",\\"vulnerabilities\\":${vulnerabilities}}"
+                """
+            }
         }
 
-        failure {
-            echo "Pipeline failed"
-        }
     }
 }
