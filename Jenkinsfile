@@ -19,11 +19,19 @@ pipeline {
 
         stage('Send Metrics') {
     steps {
-        bat '''
-        curl -X POST http://localhost:5000/api/pipeline ^
-        -H "Content-Type: application/json" ^
-        -d "{\\"branch\\":\\"%BRANCH_NAME%\\",\\"buildTime\\":120,\\"status\\":\\"SUCCESS\\",\\"vulnerabilities\\":0}"
-        '''
+        script {
+
+            def branch = env.BRANCH_NAME
+            def buildTime = currentBuild.duration
+            def status = currentBuild.currentResult
+
+            bat """
+            curl -X POST http://localhost:5000/api/pipeline ^
+            -H "Content-Type: application/json" ^
+            -d "{\\"branch\\":\\"${branch}\\",\\"buildTime\\":${buildTime},\\"status\\":\\"${status}\\",\\"vulnerabilities\\":0}"
+            """
+
+        }
     }
 }
 
