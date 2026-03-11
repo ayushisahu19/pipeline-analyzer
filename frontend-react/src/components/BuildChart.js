@@ -1,47 +1,32 @@
+// frontend-react/src/components/BuildChart.js
 import React from "react";
+import { Bar } from "react-chartjs-2";
 import {
-Chart as ChartJS,
-CategoryScale,
-LinearScale,
-PointElement,
-LineElement,
-Title,
-Tooltip,
-Legend
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
 } from "chart.js";
 
-ChartJS.register(
-CategoryScale,
-LinearScale,
-PointElement,
-LineElement,
-Title,
-Tooltip,
-Legend
-);
-import { Line } from "react-chartjs-2";
+// register plugins / scales at module top-level
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-function BuildChart({ runs }) {
-
-  const data = {
-    labels: runs.map((_, i) => "Run " + (i + 1)),
-
-    datasets: [
-      {
-        label: "Build Time",
-        data: runs.map(r => r.buildTime),
-        borderColor: "blue",
-        fill: false
-      }
-    ]
+export default function BuildChart({ labels = [], datasets = [] }) {
+  const data = { labels, datasets };
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top" },
+      title: { display: true, text: "Build time by branch" },
+    },
   };
 
   return (
-    <div className="chart">
-      <h3>Build Time Trend</h3>
-      <Line data={data} />
+    <div style={{ width: "100%", height: "300px" }}>
+      <Bar data={data} options={options} />
     </div>
   );
 }
-
-export default BuildChart;
