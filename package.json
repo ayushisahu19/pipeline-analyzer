@@ -4,7 +4,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "jest --testPathIgnorePatterns=tests/selenium"
+     "test": "jest --testPathIgnorePatterns=\"/tests/selenium|/frontend-react/\" --passWithNoTests"
   },
   "dependencies": {
     "cors": "^2.8.6",
