@@ -37,7 +37,7 @@ pipeline {
                     bat """
                     curl -X POST %API_URL% ^
                     -H "Content-Type: application/json" ^
-                    -d "{\\"branch\\":\\"${branch}\\",\\"buildTime\\":${buildTime},\\"status\\":\\"SUCCESS\\",\\"vulnerabilities\\":0}"
+                    -d "{\\"branch\\":\\"${branchName}\\",\\"buildTime\\":${buildTime},\\"status\\":\\"SUCCESS\\",\\"vulnerabilities\\":0}"
                     """
 
                 }
@@ -47,7 +47,7 @@ pipeline {
 
     post {
         failure {
-            echo "Build Failed"
+            echo "Pipeline Failed"
         }
     }
 }
