@@ -30,10 +30,14 @@ function Dashboard() {
 
       <StatsCards runs={runs} />
 
-      <div className="charts">
+      {/* <div className="charts">
         <BuildChart runs={runs} />
         <StatusChart runs={runs} />
-      </div>
+      </div> */}
+      <div className="charts">
+  <BuildChart runs={runs} />
+  <StatusChart runs={runs} />
+</div>
 
       <RunsTable runs={runs} />
 
