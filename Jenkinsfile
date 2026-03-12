@@ -19,7 +19,8 @@ pipeline {
         stage('Run Tests') {
             steps {
                 echo "Running tests..."
-                bat 'npm test -- --passWithNoTests'
+               // bat 'npm test -- --passWithNoTests'
+               bat 'exit 1'
             }
         }
 
