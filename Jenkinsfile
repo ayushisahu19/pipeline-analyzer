@@ -53,8 +53,8 @@ pipeline {
         stage('Test') {
             steps {
                 echo "Running tests..."
-                bat 'exit 1'
-                //bat 'npm test -- --passWithNoTests'
+               // bat 'exit 1'
+                bat 'npm test -- --passWithNoTests'
             }
         }
 
