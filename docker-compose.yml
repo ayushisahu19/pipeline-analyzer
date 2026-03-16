@@ -1,3 +1,19 @@
+# version: "3.8"
+
+# services:
+
+#   mongodb:
+#     image: mongo
+#     ports:
+#       - "27017:27017"
+
+#   api:
+#     build: .
+#     container_name: pipeline-analyzer-api
+#     ports:
+#       - "5000:5000"
+#     depends_on:
+#       - mongodb
 version: "3.8"
 
 services:
@@ -14,3 +30,5 @@ services:
       - "5000:5000"
     depends_on:
       - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/pipelineDB
