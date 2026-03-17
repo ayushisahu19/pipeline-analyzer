@@ -1,46 +1,49 @@
-// import React from "react";
+// <<<<<<< HEAD
+// // import React from "react";
 
-// function RunsTable({ runs }) {
+// // function RunsTable({ runs }) {
 
-//   return (
-//     <div>
+// //   return (
+// //     <div>
 
-//       <h2>Pipeline Runs</h2>
+// //       <h2>Pipeline Runs</h2>
 
-//       <table>
+// //       <table>
 
-//         <thead>
-//           <tr>
-//             <th>Branch</th>
-//             <th>Build Time</th>
-//             <th>Status</th>
-//             <th>Vulnerabilities</th>
-//           </tr>
-//         </thead>
+// //         <thead>
+// //           <tr>
+// //             <th>Branch</th>
+// //             <th>Build Time</th>
+// //             <th>Status</th>
+// //             <th>Vulnerabilities</th>
+// //           </tr>
+// //         </thead>
 
-//         <tbody>
+// //         <tbody>
 
-//           {runs.map((run, i) => (
+// //           {runs.map((run, i) => (
 
-//             <tr key={i}>
-//               <td>{run.branch}</td>
-//               <td>{run.buildTime}</td>
-//               <td>{run.status}</td>
-//               <td>{run.vulnerabilities}</td>
-//             </tr>
+// //             <tr key={i}>
+// //               <td>{run.branch}</td>
+// //               <td>{run.buildTime}</td>
+// //               <td>{run.status}</td>
+// //               <td>{run.vulnerabilities}</td>
+// //             </tr>
 
-//           ))}
+// //           ))}
 
-//         </tbody>
+// //         </tbody>
 
-//       </table>
+// //       </table>
 
-//     </div>
-//   );
-// }
+// //     </div>
+// //   );
+// // }
 
-// export default RunsTable;
+// // export default RunsTable;
 
+//=======
+//>>>>>>> feature/test-feature
 import React from "react";
 
 function RunsTable({ runs }) {
@@ -48,14 +51,22 @@ function RunsTable({ runs }) {
   return (
     <div>
 
+{/* <<<<<<< HEAD
       <h2 style={{textAlign:"center"}}>Pipeline Runs</h2>
+======= */}
+      <h2>Pipeline Runs</h2>
+{/* </div>>>>>>>> feature/test-feature */}
 
       <table>
 
         <thead>
           <tr>
             <th>Branch</th>
+{/* <<<<<<< HEAD
             <th>Build Time (ms)</th>
+======= */}
+            <th>Build Time</th>
+{/* >>>>>>> feature/test-feature */}
             <th>Status</th>
             <th>Vulnerabilities</th>
           </tr>
@@ -68,6 +79,7 @@ function RunsTable({ runs }) {
             <tr key={i}>
               <td>{run.branch}</td>
               <td>{run.buildTime}</td>
+{/* <<<<<<< HEAD
 
               <td
                 className={
@@ -79,6 +91,9 @@ function RunsTable({ runs }) {
                 {run.status}
               </td>
 
+======= */}
+              <td>{run.status}</td>
+{/* >>>>>>> feature/test-feature */}
               <td>{run.vulnerabilities}</td>
             </tr>
 

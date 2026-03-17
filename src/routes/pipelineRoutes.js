@@ -1,9 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const controller = require("../controllers/pipelineController");
+const pipelineController = require("../controllers/pipelineController");
+const {
+    createRun,
+    getRuns,
+    getBranchSummary
+} = require("../controllers/pipelineController");
 
-router.post("/pipeline", controller.createRun);
-router.get("/pipeline", controller.getRuns);
-router.get("/pipeline/summary/:branch", controller.getBranchSummary);
-
+router.post("/pipeline", createRun);
+router.get("/pipeline", getRuns);
+router.get("/pipeline/summary/:branch", getBranchSummary);
+//router.get("/compare/:branch1/:branch2", pipelineController.compareBranches);
+router.get("/pipeline/compare/:branch1/:branch2", pipelineController.compareBranches);
 module.exports = router;
