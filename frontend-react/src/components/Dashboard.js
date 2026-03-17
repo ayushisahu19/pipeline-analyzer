@@ -10,10 +10,27 @@ function Dashboard() {
 
   const [runs, setRuns] = useState([]);
 
+  // const loadData = async () => {
+  //   const res = await getRuns();
+  //   setRuns(res.data);
+  // };
+
+
+
+//newly added 
   const loadData = async () => {
+  try {
     const res = await getRuns();
     setRuns(res.data);
-  };
+  } catch (err) {
+    console.error("Failed to load data:", err.message);
+    // don't crash — just keep runs as empty array
+  }
+};
+
+
+
+
 
   useEffect(() => {
 
