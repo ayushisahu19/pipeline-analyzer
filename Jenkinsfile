@@ -28,7 +28,7 @@ stages {
             script {
                 echo "Running npm audit..."
 
-                bat 'npm audit --json > audit.json'
+                bat 'npm audit --json > audit.json & exit /b 0'
 
                 def vulnCount = powershell(
                     returnStdout: true,
