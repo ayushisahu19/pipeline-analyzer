@@ -1,78 +1,104 @@
 pipeline {
-    agent any
+agent any
 
-    stages {
+stages {
 
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                echo "Installing dependencies..."
-                bat 'npm install'
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                echo "Running tests..."
-              bat 'npm test -- --passWithNoTests'
-              //bat 'exit 1'
-            }
-        }
-
-        stage('Vulnerability Scan') {
-    steps {
-        script {
-
-            echo "Running npm audit..."
-
-            bat 'npm audit --json > audit.json'
-
-            def vulnCount = powershell(
-                returnStdout: true,
-                script: """
-                \$audit = Get-Content audit.json | ConvertFrom-Json
-                \$v = \$audit.metadata.vulnerabilities
-                (\$v.low + \$v.moderate + \$v.high + \$v.critical)
-                """
-            ).trim()
-
-            env.VULN_COUNT = vulnCount ?: "0"
-
-            echo "Total vulnerabilities: ${env.VULN_COUNT}"
+    stage('Checkout') {
+        steps {
+            checkout scm
         }
     }
+
+    stage('Install Dependencies') {
+        steps {
+            echo "Installing dependencies..."
+            bat 'npm install'
+        }
+    }
+
+    stage('Run Tests') {
+        steps {
+            echo "Running tests..."
+            bat 'npm test -- --passWithNoTests'
+        }
+    }
+
+    stage('Vulnerability Scan') {
+        steps {
+            script {
+                echo "Running npm audit..."
+
+                bat 'npm audit --json > audit.json'
+
+                def vulnCount = powershell(
+                    returnStdout: true,
+                    script: """
+                    \$audit = Get-Content audit.json | ConvertFrom-Json
+                    \$v = \$audit.metadata.vulnerabilities
+                    (\$v.low + \$v.moderate + \$v.high + \$v.critical)
+                    """
+                ).trim()
+
+                env.VULN_COUNT = vulnCount ?: "0"
+
+                echo "Total vulnerabilities: ${env.VULN_COUNT}"
+            }
+        }
+    }
+
 }
 
-    }
+post {
 
-    post {
+    failure {
+        script {
+            env.FAILED_STAGE = env.STAGE_NAME ?: "Unknown"
 
-        always {
-            script {
+            def rawLog = currentBuild.rawBuild.getLog(60).join("\n")
 
-                def branch = env.BRANCH_NAME
-                def buildTime = currentBuild.duration
-                def status = currentBuild.currentResult
-                def vulnerabilities = env.VULN_COUNT ?: "0"
+            def sanitized = rawLog
+                .replaceAll(/(?i)(api[\_-]?key|token|secret|password)\s*[:=]\s*\S+/, '$1: [REDACTED]')
+                .replaceAll(/(?i)(mongodb(\+srv)?:\/\/)[^\s]+/, '$1[REDACTED]')
 
-                if (status == "FAILURE") {
-                    status = "FAILED"
-                }
-
-                echo "Sending pipeline metrics..."
-
-                bat """
-                curl -X POST http://localhost:5000/api/pipeline ^
-                -H "Content-Type: application/json" ^
-                -d "{\\"branch\\":\\"${branch}\\",\\"buildTime\\":${buildTime},\\"status\\":\\"${status}\\",\\"vulnerabilities\\":${vulnerabilities}}"
-                """
+            if (sanitized.length() > 1800) {
+                sanitized = sanitized.take(1800) + "... [truncated]"
             }
-        }
 
+            env.LOG_EXCERPT = sanitized
+        }
     }
+
+    always {
+        script {
+
+            def branch = env.BRANCH_NAME
+            def buildTime = currentBuild.duration
+            def status = currentBuild.currentResult
+            def vulnerabilities = env.VULN_COUNT ?: "0"
+
+            if (status == "FAILURE") {
+                status = "FAILED"
+            }
+
+            def failedStage = env.FAILED_STAGE ?: ""
+            def logExcerpt = env.LOG_EXCERPT ?: ""
+
+            echo "Sending pipeline metrics..."
+
+            def payload = groovy.json.JsonOutput.toJson([
+                branch         : branch,
+                buildTime      : buildTime,
+                status         : status,
+                vulnerabilities: vulnerabilities as Integer,
+                failedStage    : failedStage,
+                logExcerpt     : logExcerpt
+            ])
+
+            writeFile file: 'payload.json', text: payload
+
+            bat 'curl -X POST http://localhost:5000/api/pipeline -H "Content-Type: application/json" -d @payload.json'
+        }
+    }
+
+}
 }
