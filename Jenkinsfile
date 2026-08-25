@@ -14,12 +14,26 @@ pipeline {
                 echo "Installing dependencies..."
                 bat 'npm install'
             }
+            post {
+                failure {
+                    script {
+                        env.ACTUAL_FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }
         }
 
         stage('Run Tests') {
             steps {
                 echo "Running tests..."
                 bat 'npm test -- --passWithNoTests'
+            }
+            post {
+                failure {
+                    script {
+                        env.ACTUAL_FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
             }
         }
 
@@ -40,16 +54,20 @@ pipeline {
                     ).trim()
 
                     env.VULN_COUNT = vulnCount ?: "0"
-
                     echo "Total vulnerabilities: ${env.VULN_COUNT}"
                 }
             }
+            post {
+                failure {
+                    script {
+                        env.ACTUAL_FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }
         }
-
     }
 
     post {
-
         always {
             script {
 
@@ -57,24 +75,25 @@ pipeline {
                 def buildTime = currentBuild.duration
                 def status = currentBuild.currentResult
                 def vulnerabilities = env.VULN_COUNT ?: "0"
-
                 def failedStage = ""
                 def logExcerpt = ""
 
                 if (status == "FAILURE") {
+
                     status = "FAILED"
 
-                    failedStage = env.STAGE_NAME ?: "Unknown"
+                    failedStage = env.ACTUAL_FAILED_STAGE ?: "Unknown"
 
                     def rawLog = currentBuild.rawBuild.getLog(60).join("\n")
 
                     def sanitized = rawLog
-                        .replaceAll(/(?i)(api[_-]?key|token|secret|password)\s*[:=]\s*\S+/, '$1: [REDACTED]')
+                        .replaceAll(/(?i)(api[\_-]?key|token|secret|password)\s*[:=]\s*\S+/, '$1: [REDACTED]')
                         .replaceAll(/(?i)(mongodb(\+srv)?:\/\/)[^\s]+/, '$1[REDACTED]')
 
                     if (sanitized.length() > 1800) {
                         sanitized = sanitized.take(1800) + "... [truncated]"
                     }
+
                     logExcerpt = sanitized
                 }
 
@@ -94,6 +113,5 @@ pipeline {
                 bat 'curl -X POST http://localhost:5000/api/pipeline -H "Content-Type: application/json" -d @payload.json'
             }
         }
-
     }
 }
