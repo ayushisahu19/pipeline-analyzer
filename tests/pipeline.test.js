@@ -11,6 +11,6 @@ app.get("/api/pipeline", (req, res) => {
 describe("Pipeline API Unit Tests", () => {
   test("GET /api/pipeline should return 200", async () => {
     const res = await request(app).get("/api/pipeline");
-    expect(res.statusCode).toBe(999);
+    expect(res.statusCode).toBe(200);
   });
 });
