@@ -35,7 +35,7 @@ const pipelineSchema = new mongoose.Schema({
         maxlength: 2000
         // A short, SANITIZED snippet of the failing stage's output.
         // Sanitize/truncate in the Jenkinsfile before this ever leaves
-        // the build agent — never store or forward raw, unredacted logs.
+        // the build agent - never store or forward raw, unredacted logs.
     },
 
     aiDiagnosis: {
