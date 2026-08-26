@@ -8,3 +8,5 @@ export const getRuns = () => API.get("/pipeline");
 
 export const getBranchSummary = (branch) =>
   API.get(`/pipeline/summary/${branch}`);
+
+export const analyzeRun = (id) => API.post(`/pipeline/${id}/analyze`);

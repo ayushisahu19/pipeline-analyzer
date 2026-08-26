@@ -1,158 +1,49 @@
-<<<<<<< HEAD
-/* body {
-=======
-body {
->>>>>>> feature/test-feature
-font-family: Arial;
-background: #f5f6fa;
-margin: 0;
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+@import "./styles/tokens.css";
+
+.App {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5);
 }
 
-.title {
-text-align: center;
-margin: 20px;
-}
-
-.cards {
-display: flex;
-justify-content: center;
-gap: 20px;
-}
-
-.card {
-background: white;
-padding: 20px;
-border-radius: 10px;
-width: 200px;
-text-align: center;
-box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.charts {
-display: flex;
-justify-content: center;
-gap: 40px;
-margin: 40px;
-}
-
-.chart {
-background: white;
-padding: 20px;
-border-radius: 10px;
-width: 400px;
-}
-
-table {
-width: 80%;
-margin: auto;
-border-collapse: collapse;
-background: white;
-}
-
-th, td {
-padding: 10px;
-border: 1px solid #ddd;
-text-align: center;
-}
-
-th {
-background: #007bff;
-color: white;
-} */
-
-body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: #f4f7fb;
-  margin: 0;
-  padding: 0;
-}
-
-.title {
-  text-align: center;
-  padding: 20px;
-  font-size: 28px;
-  font-weight: 600;
-}
-
-.cards {
+.app-header {
   display: flex;
-  justify-content: center;
-  gap: 25px;
-  margin: 20px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
 }
 
-.card {
-  background: white;
-  padding: 25px;
-  border-radius: 12px;
-  width: 220px;
-  text-align: center;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-  transition: transform 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-}
-
-.card h3 {
-  margin-bottom: 10px;
-  color: #444;
-}
-
-.card p {
+.app-title {
+  font-family: var(--font-display);
   font-size: 22px;
-  font-weight: bold;
-  color: #007bff;
+  font-weight: 600;
+  margin: 0;
+}
+
+.app-title-prefix {
+  color: var(--accent);
+  font-family: var(--font-mono);
 }
 
 .charts {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin: 40px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
 }
 
-.chart {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  width: 450px;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+.chart-card {
+  padding: var(--space-4);
 }
 
-table {
-  width: 90%;
-  margin: 30px auto;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+.chart-wrap {
+  height: 280px;
+  position: relative;
 }
 
-th, td {
-  padding: 12px;
-  text-align: center;
-}
-
-th {
-  background: #007bff;
-  color: white;
-}
-
-tr:nth-child(even) {
-  background: #f7f7f7;
-}
-
-.status-success {
-  color: green;
-  font-weight: bold;
-}
-
-.status-failed {
-  color: red;
-  font-weight: bold;
+@media (max-width: 720px) {
+  .charts {
+    grid-template-columns: 1fr;
+  }
 }

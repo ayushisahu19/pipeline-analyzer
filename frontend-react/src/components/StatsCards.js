@@ -1,37 +1,29 @@
 import React from "react";
+import { Activity, CheckCircle2, Clock } from "lucide-react";
+import Card from "./common/Card";
+import usePipelineStats from "../hooks/usePipelineStats";
+import "./StatsCards.css";
 
 function StatsCards({ runs }) {
+  const { totalRuns, successRate, avgBuildSeconds } = usePipelineStats(runs);
 
-  const totalRuns = runs.length;
-
-  const success = runs.filter(r => r.status === "SUCCESS").length;
-
-  const successRate =
-    totalRuns === 0 ? 0 : ((success / totalRuns) * 100).toFixed(1);
-
-  const avgBuild =
-    totalRuns === 0
-      ? 0
-      : (runs.reduce((sum, r) => sum + r.buildTime, 0) / totalRuns).toFixed(1);
+  const stats = [
+    { label: "Total Runs", value: totalRuns, icon: Activity },
+    { label: "Success Rate", value: `${successRate}%`, icon: CheckCircle2 },
+    { label: "Avg Build Time", value: `${avgBuildSeconds}s`, icon: Clock },
+  ];
 
   return (
-    <div className="cards">
-
-      <div className="card">
-        <h3>Total Runs</h3>
-        <p>{totalRuns}</p>
-      </div>
-
-      <div className="card">
-        <h3>Success Rate</h3>
-        <p>{successRate}%</p>
-      </div>
-
-      <div className="card">
-        <h3>Average Build Time</h3>
-        <p>{avgBuild} s</p>
-      </div>
-
+    <div className="stats-grid">
+      {stats.map(({ label, value, icon: Icon }) => (
+        <Card key={label} className="stat-card">
+          <Icon size={18} className="stat-icon" />
+          <div>
+            <p className="stat-label">{label}</p>
+            <p className="stat-value">{value}</p>
+          </div>
+        </Card>
+      ))}
     </div>
   );
 }

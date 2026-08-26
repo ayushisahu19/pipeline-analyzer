@@ -5,7 +5,12 @@ import "./App.css";
 function App() {
   return (
     <div className="App">
-      <h1 className="title">CI/CD Pipeline Analyzer Dashboard</h1>
+      <header className="app-header">
+        <h1 className="app-title">
+          <span className="app-title-prefix">{">"} </span>
+          Pipeline Analyzer
+        </h1>
+      </header>
       <Dashboard />
     </div>
   );
