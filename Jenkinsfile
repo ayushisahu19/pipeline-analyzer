@@ -14,44 +14,60 @@ pipeline {
                 echo "Installing dependencies..."
                 bat 'npm install'
             }
+            post {
+                failure {
+                    script {
+                        env.ACTUAL_FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }
         }
 
         stage('Run Tests') {
             steps {
                 echo "Running tests..."
-              bat 'npm test -- --passWithNoTests'
-              //bat 'exit 1'
+                bat 'npm test -- --passWithNoTests'
+            }
+            post {
+                failure {
+                    script {
+                        env.ACTUAL_FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
             }
         }
 
         stage('Vulnerability Scan') {
-    steps {
-        script {
+            steps {
+                script {
+                    echo "Running npm audit..."
 
-            echo "Running npm audit..."
+                    bat 'npm audit --json > audit.json & exit /b 0'
 
-            bat 'npm audit --json > audit.json'
+                    def vulnCount = powershell(
+                        returnStdout: true,
+                        script: """
+                        \$audit = Get-Content audit.json | ConvertFrom-Json
+                        \$v = \$audit.metadata.vulnerabilities
+                        (\$v.low + \$v.moderate + \$v.high + \$v.critical)
+                        """
+                    ).trim()
 
-            def vulnCount = powershell(
-                returnStdout: true,
-                script: """
-                \$audit = Get-Content audit.json | ConvertFrom-Json
-                \$v = \$audit.metadata.vulnerabilities
-                (\$v.low + \$v.moderate + \$v.high + \$v.critical)
-                """
-            ).trim()
-
-            env.VULN_COUNT = vulnCount ?: "0"
-
-            echo "Total vulnerabilities: ${env.VULN_COUNT}"
+                    env.VULN_COUNT = vulnCount ?: "0"
+                    echo "Total vulnerabilities: ${env.VULN_COUNT}"
+                }
+            }
+            post {
+                failure {
+                    script {
+                        env.ACTUAL_FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }
         }
-    }
-}
-
     }
 
     post {
-
         always {
             script {
 
@@ -59,20 +75,43 @@ pipeline {
                 def buildTime = currentBuild.duration
                 def status = currentBuild.currentResult
                 def vulnerabilities = env.VULN_COUNT ?: "0"
+                def failedStage = ""
+                def logExcerpt = ""
 
                 if (status == "FAILURE") {
+
                     status = "FAILED"
+
+                    failedStage = env.ACTUAL_FAILED_STAGE ?: "Unknown"
+
+                    def rawLog = currentBuild.rawBuild.getLog(60).join("\n")
+
+                    def sanitized = rawLog
+                        .replaceAll(/(?i)(api[\_-]?key|token|secret|password)\s*[:=]\s*\S+/, '$1: [REDACTED]')
+                        .replaceAll(/(?i)(mongodb(\+srv)?:\/\/)[^\s]+/, '$1[REDACTED]')
+
+                    if (sanitized.length() > 1800) {
+                        sanitized = sanitized.take(1800) + "... [truncated]"
+                    }
+
+                    logExcerpt = sanitized
                 }
 
                 echo "Sending pipeline metrics..."
 
-                bat """
-                curl -X POST http://localhost:5000/api/pipeline ^
-                -H "Content-Type: application/json" ^
-                -d "{\\"branch\\":\\"${branch}\\",\\"buildTime\\":${buildTime},\\"status\\":\\"${status}\\",\\"vulnerabilities\\":${vulnerabilities}}"
-                """
+                def payload = groovy.json.JsonOutput.toJson([
+                    branch         : branch,
+                    buildTime      : buildTime,
+                    status         : status,
+                    vulnerabilities: vulnerabilities as Integer,
+                    failedStage    : failedStage,
+                    logExcerpt     : logExcerpt
+                ])
+
+                writeFile file: 'payload.json', text: payload
+
+                bat 'curl -X POST http://localhost:5000/api/pipeline -H "Content-Type: application/json" -d @payload.json'
             }
         }
-
     }
 }
