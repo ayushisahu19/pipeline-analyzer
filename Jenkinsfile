@@ -66,6 +66,15 @@ pipeline {
             }
         }
     }
+        stage('Frontend Build') {
+            steps {
+                dir('frontend-react') {
+                    echo "Installing frontend dependencies..."
+                    bat 'npm install'
+                    echo "Building frontend..."
+                    bat 'npm run build'
+                }
+            }
 
     post {
         always {
