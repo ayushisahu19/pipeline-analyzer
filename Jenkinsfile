@@ -88,7 +88,6 @@ pipeline {
     }
 
     post {
-
         always {
             script {
 
@@ -105,14 +104,19 @@ pipeline {
 
                     failedStage = env.ACTUAL_FAILED_STAGE ?: "Unknown"
 
-                    def rawLog = currentBuild.rawBuild.getLog(60).join("\n")
+                    def rawLog = currentBuild.rawBuild.getLog(80).join("\n")
 
-                    def sanitized = rawLog
+                    def filteredLines = rawLog.split("\n").findAll { line ->
+                        !(line =~ /(?i)npm warn|npm deprecated/)
+                    }
+                    def filtered = filteredLines.join("\n")
+
+                    def sanitized = filtered
                         .replaceAll(/(?i)(api[_-]?key|token|secret|password)\s*[:=]\s*\S+/, '$1: [REDACTED]')
                         .replaceAll(/(?i)(mongodb(\+srv)?:\/\/)[^\s]+/, '$1[REDACTED]')
 
                     if (sanitized.length() > 1800) {
-                        sanitized = sanitized.take(1800) + "... [truncated]"
+                        sanitized = "[earlier output truncated] ... " + sanitized.takeRight(1800)
                     }
                     logExcerpt = sanitized
                 }
