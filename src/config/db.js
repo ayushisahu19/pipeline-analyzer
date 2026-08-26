@@ -16,7 +16,7 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
     try {
-        const uri = process.env.MONGO_URI || "mongodb://localhost:27017/pipelineDB";
+        const uri = process.env.SOME_REQUIRED_VAR;
         await mongoose.connect(uri);
         console.log("MongoDB Connected");
     } catch (error) {
