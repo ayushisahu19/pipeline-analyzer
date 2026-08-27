@@ -32,7 +32,7 @@ function StatsCards({ runs }) {
         <p>{avgBuild} s</p>
       </div>
 
-  
+    </div>
   );
 }
 
