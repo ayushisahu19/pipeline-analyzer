@@ -12,7 +12,7 @@ async function createRun(req, res) {
 
 async function getRuns(req, res) {
     try {
-        const runs = await PipelineRun.find();
+        const runs = await PipelineRun.find().sort({ createdAt: -1 });
         res.json(runs);
     } catch (error) {
         res.status(500).json({ message: error.message });
