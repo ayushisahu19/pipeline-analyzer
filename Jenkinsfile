@@ -116,7 +116,7 @@ pipeline {
                         .replaceAll(/(?i)(mongodb(\+srv)?:\/\/)[^\s]+/, '$1[REDACTED]')
 
                     if (sanitized.length() > 1800) {
-                        sanitized = "[earlier output truncated] ... " + sanitized.takeRight(1800)
+                        sanitized = "[earlier output truncated] ... " + sanitized.substring(sanitized.length() - 1800)
                     }
                     logExcerpt = sanitized
                 }
